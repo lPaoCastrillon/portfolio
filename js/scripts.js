@@ -68,32 +68,62 @@
         // $(".line-1").delay(6000).fadeIn("show");
     });
 
+    var TxtType = function(el, toRotate, period) {
+        this.toRotate = toRotate;
+        this.el = el;
+        this.loopNum = 0;
+        this.period = parseInt(period, 10) || 2000;
+        this.txt = '';
+        this.tick();
+        this.isDeleting = false;
+    };
 
-    // (function makeDiv() {
-    //     var divsize = ((Math.random() * 1) + 1).toFixed();
-    //     // console.log("fef", divsize);
-    //     var posx = (Math.random() * ($(document).width() - divsize)).toFixed();
-    //     var posy = (Math.random() * ($(document).height() - divsize)).toFixed();
+    TxtType.prototype.tick = function() {
+        var i = this.loopNum % this.toRotate.length;
+        var fullTxt = this.toRotate[i];
 
-    //     $newdiv = $('<div/>').css({
-    //         'width': divsize + 'px',
-    //         'height': divsize + 'px',
-    //         'background': '#ffffff',
-    //         'box-shadow': '0 0 2px 1px blue',
-    //         'z-index': '-1',
-    //         'opacity': '.3',
-    //         'position': 'absolute',
-    //         'left': posx + 'px',
-    //         'top': posy + 'px',
-    //         'animation': 'moveStar 30s infinite'
+        if (this.isDeleting) {
+            this.txt = fullTxt.substring(0, this.txt.length - 1);
+        } else {
+            this.txt = fullTxt.substring(0, this.txt.length + 1);
+        }
 
-    //     }).appendTo('body').fadeIn(100).delay(300, function() {
-    //         // $(this).remove();
-    //         makeDiv();
-    //     });
+        this.el.innerHTML = '<span class="wrap">' + this.txt + '</span>';
 
+        var that = this;
+        var delta = 200 - Math.random() * 100;
 
-    // })();
+        if (this.isDeleting) { delta /= 2; }
+
+        if (!this.isDeleting && this.txt === fullTxt) {
+            delta = this.period;
+            this.isDeleting = true;
+        } else if (this.isDeleting && this.txt === '') {
+            this.isDeleting = false;
+            this.loopNum++;
+            delta = 500;
+        }
+
+        setTimeout(function() {
+            that.tick();
+        }, delta);
+    };
+
+    window.onload = function() {
+        var elements = document.getElementsByClassName('typewrite');
+        for (var i = 0; i < elements.length; i++) {
+            var toRotate = elements[i].getAttribute('data-type');
+            var period = elements[i].getAttribute('data-period');
+            if (toRotate) {
+                new TxtType(elements[i], JSON.parse(toRotate), period);
+            }
+        }
+        // INJECT CSS
+        var css = document.createElement("style");
+        css.type = "text/css";
+        css.innerHTML = ".typewrite > .wrap { border-right: 0.08em solid #ffa7c4; color: #ffa7c4; font-size: 2.5rem; text-shadow: 0 0 15px #fff;}";
+        document.body.appendChild(css);
+    };
 
 
 })(jQuery); // End of use strict
